@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// src/App.tsx
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DashboardLayout } from './layout/DashboardLayout';
@@ -18,29 +19,31 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardPage />} />
-              <Route path="orders" element={<OrdersPage />} />
-              <Route path="shipments" element={<ShipmentsPage />} />
-              <Route path="clients" element={<ClientsPage />} />
-              <Route path="suppliers" element={<SuppliersPage />} />
-              <Route path="companies" element={<CompaniesPage />} />
-              <Route path="client-invoices" element={<ClientInvoicesPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="shipments" element={<ShipmentsPage />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="suppliers" element={<SuppliersPage />} />
+            <Route path="companies" element={<CompaniesPage />} />
+            <Route path="vin-inventory" element={<VinInventoryPage />} />
+            {/* This path matches DashboardLayout navigation: /client-invoices */}
+            <Route path="client-invoices" element={<ClientInvoicesPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </ThemeProvider>
     </AuthProvider>
   );
