@@ -1,4 +1,6 @@
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -6,9 +8,10 @@ export const SettingsPage = () => {
   const { user } = useAuth();
   const { theme, language, toggleTheme, setLanguage } = useTheme();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences' | 'notifications'>('profile');
-  const [firstName, setFirstName] = useState(user?.firstName || '');
-  const [lastName, setLastName] = useState(user?.lastName || '');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState(user?.email || '');
+ //updated syntax and correct code above 11-13
   const [phone, setPhone] = useState('');
   const [position, setPosition] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');

@@ -1,37 +1,20 @@
-// src/pages/OrdersPage.tsx
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '../api/orders';
-import OrderForm from '../components/modals/OrderForm';
+import type { VehicleOrder } from '../api/orders';
 
-// Define the type inline
-interface VehicleOrder {
-  id?: number;
-  companyId: number;
-  supplierId?: number;
-  clientId?: number;
-  orderDate: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  colour?: string;
-  vin?: string;
-  unitsOrdered?: number;
-  unitDepositEur?: number;
-  depositTotalEur?: number;
-  depositStatus?: string;
-  unitPriceEur?: number;
-  totalCostEur?: number;
-  contractId?: string;
-  eta?: string;
-  contractStatus?: string;
-  status?: string;
-  paymentStatus?: string;
-  notes?: string;
-}
+import OrderForm from '../components/modals/OrderForm';
+import OrderDetailsModal from '../components/modals/OrderDetailsModal';
+import RecordPaymentModal from '../components/modals/RecordPaymentModal';
 
 export const OrdersPage = () => {
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<VehicleOrder | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<VehicleOrder | null>(null);
+  const [paymentOrder, setPaymentOrder] = useState<VehicleOrder | null>(null);
+  
   const [filters, setFilters] = useState({
     status: '',
     supplierId: '',
@@ -70,6 +53,11 @@ export const OrdersPage = () => {
     queryClient.invalidateQueries({ queryKey: ['orders'] });
   };
 
+  const handlePaymentSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['orders'] });
+    queryClient.invalidateQueries({ queryKey: ['payments'] });
+  };
+
   const formatCurrency = (amount?: number) => {
     if (!amount) return '€0';
     return new Intl.NumberFormat('en-IE', {
@@ -87,6 +75,9 @@ export const OrdersPage = () => {
     const colors: Record<string, string> = {
       draft: 'bg-gray-500',
       active: 'bg-blue-500',
+      confirmed: 'bg-blue-500',
+      'in progress': 'bg-yellow-500',
+      in_transit: 'bg-yellow-500',
       completed: 'bg-green-500',
       cancelled: 'bg-red-500',
     };
@@ -94,6 +85,21 @@ export const OrdersPage = () => {
     return (
       <span className={`${color} text-white text-xs px-2 py-1 rounded`}>
         {status || 'Draft'}
+      </span>
+    );
+  };
+
+  const getPaymentBadge = (paymentStatus?: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-orange-100 text-orange-700',
+      partial: 'bg-blue-100 text-blue-700',
+      paid: 'bg-green-100 text-green-700',
+      overdue: 'bg-red-100 text-red-700',
+    };
+    const color = colors[paymentStatus?.toLowerCase() || 'pending'] || 'bg-gray-100 text-gray-700';
+    return (
+      <span className={`${color} text-xs px-2 py-1 rounded font-medium`}>
+        {paymentStatus || 'Pending'}
       </span>
     );
   };
@@ -121,7 +127,8 @@ export const OrdersPage = () => {
             >
               <option value="">All</option>
               <option value="draft">Draft</option>
-              <option value="active">Active</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="in_transit">In Transit</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -205,14 +212,25 @@ export const OrdersPage = () => {
                     </td>
                     <td className="px-4 py-3 text-sm">{getStatusBadge(order.status)}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className="text-xs text-gray-600">
-                        {order.paymentStatus || 'Pending'}
-                      </span>
+                      {getPaymentBadge(order.paymentStatus)}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex gap-2">
-                        <button className="text-blue-600 hover:underline text-sm">
+                        <button 
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowDetailsModal(true);
+                          }}
+                          className="text-blue-600 hover:underline text-sm"
+                        >
                           View
+                        </button>
+                        <button 
+                          onClick={() => setPaymentOrder(order)}
+                          className="text-green-600 hover:underline text-sm font-medium"
+                          title="Record Payment"
+                        >
+                          💳 Pay
                         </button>
                         <button
                           onClick={() => order.id && handleDelete(order.id)}
@@ -230,10 +248,49 @@ export const OrdersPage = () => {
         )}
       </div>
 
+      {/* Create Modal */}
       {showCreateModal && (
         <OrderForm
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreateSuccess}
+        />
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedOrder(null);
+          }}
+          onEdit={() => {
+            setEditingOrder(selectedOrder);
+            setShowDetailsModal(false);
+          }}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {editingOrder && (
+        <OrderForm
+          order={editingOrder}
+          onClose={() => setEditingOrder(null)}
+          onSuccess={() => {
+            setEditingOrder(null);
+            handleCreateSuccess();
+          }}
+        />
+      )}
+
+      {/* Record Payment Modal */}
+      {paymentOrder && (
+        <RecordPaymentModal
+          orderId={paymentOrder.id!}
+          orderTotal={paymentOrder.totalCostEur || 0}
+          paidAmount={0}
+          onClose={() => setPaymentOrder(null)}
+          onSuccess={handlePaymentSuccess}
         />
       )}
     </div>

@@ -39,10 +39,10 @@ export const ClientModal = ({ isOpen, onClose, onSave, client, isLoading }: Clie
     countryCode: 'IE',
     vatNumber: '',
     registrationNumber: '',
-    cocStatus: 'not_required' as const,
+    cocStatus: 'not_required' as Client['cocStatus'],
     cocExpiryDate: '',
     cocDocumentUrl: '',
-    exportLicenseStatus: 'not_required' as const,
+    exportLicenseStatus: 'not_required' as Client['exportLicenseStatus'],
     exportLicenseNumber: '',
     exportLicenseExpiry: '',
     paymentTerms: '',
@@ -66,10 +66,10 @@ export const ClientModal = ({ isOpen, onClose, onSave, client, isLoading }: Clie
         countryCode: client.countryCode || 'IE',
         vatNumber: client.vatNumber || '',
         registrationNumber: client.registrationNumber || '',
-        cocStatus: client.cocStatus || 'not_required',
+        cocStatus: client.cocStatus || ('not_required' as Client['cocStatus']),
         cocExpiryDate: client.cocExpiryDate || '',
         cocDocumentUrl: client.cocDocumentUrl || '',
-        exportLicenseStatus: client.exportLicenseStatus || 'not_required',
+        exportLicenseStatus: client.exportLicenseStatus || ('not_required' as Client['exportLicenseStatus']),
         exportLicenseNumber: client.exportLicenseNumber || '',
         exportLicenseExpiry: client.exportLicenseExpiry || '',
         paymentTerms: client.paymentTerms || '',
@@ -179,7 +179,7 @@ export const ClientModal = ({ isOpen, onClose, onSave, client, isLoading }: Clie
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">COC Status</label>
-                  <select value={formData.cocStatus} onChange={(e) => setFormData({ ...formData, cocStatus: e.target.value as any })} className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                  <select value={formData.cocStatus} onChange={(e) => setFormData({ ...formData, cocStatus: e.target.value as Client['cocStatus'] })} className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     <option value="not_required">Not Required</option>
                     <option value="pending">Pending</option>
                     <option value="received">Received</option>
@@ -196,7 +196,7 @@ export const ClientModal = ({ isOpen, onClose, onSave, client, isLoading }: Clie
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">Export License Status</label>
-                  <select value={formData.exportLicenseStatus} onChange={(e) => setFormData({ ...formData, exportLicenseStatus: e.target.value as any })} className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                  <select value={formData.exportLicenseStatus} onChange={(e) => setFormData({ ...formData, exportLicenseStatus: e.target.value as Client['exportLicenseStatus'] })} className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     <option value="not_required">Not Required</option>
                     <option value="pending">Pending</option>
                     <option value="valid">Valid</option>
@@ -250,3 +250,4 @@ export const ClientModal = ({ isOpen, onClose, onSave, client, isLoading }: Clie
     </div>
   );
 };
+

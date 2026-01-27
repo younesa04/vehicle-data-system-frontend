@@ -1,10 +1,17 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { User } from '../types';
-import { authApi } from '../api/auth';
+
+import { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  login: (token: string, user: User) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -12,34 +19,32 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>({
+    id: '1',
+    email: 'demo@example.com',
+    name: 'Demo User',
+    role: 'Admin'
+  });
 
-  useEffect(() => {
-    const currentUser = authApi.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-  }, []);
-
-  const login = (token: string, userData: User) => {
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+  const login = async (email: string, password: string) => {
+    // Simulate API call
+    setUser({
+      id: '1',
+      email: email,
+      name: 'Demo User',
+      role: 'Admin'
+    });
   };
 
   const logout = () => {
-    authApi.logout();
     setUser(null);
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

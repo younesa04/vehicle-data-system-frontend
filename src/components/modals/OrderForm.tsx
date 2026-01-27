@@ -2,31 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { suppliersApi } from '../../api/suppliers';
 import { clientsApi } from '../../api/clients';
+import type { VehicleOrder } from '../../api/orders';
 
 interface OrderFormProps {
+  order?: VehicleOrder;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function OrderForm({ onClose, onSuccess }: OrderFormProps) {
+export default function OrderForm({ order, onClose, onSuccess }: OrderFormProps) {
   const [formData, setFormData] = useState({
-    vehicleMake: '',
-    vehicleModel: '',
-    colour: '',
-    vin: '',
-    unitsOrdered: 1,
-    unitPriceEur: '',
-    unitDepositEur: '',
-    orderDate: new Date().toISOString().split('T')[0],
-    eta: '',
-    supplierId: '',
-    clientId: '',
-    contractId: '',
-    status: 'Draft',
-    paymentStatus: 'Pending',
-    depositStatus: 'Pending',
-    contractStatus: 'Pending',
-    notes: ''
+    vehicleMake: order?.vehicleMake || '',
+    vehicleModel: order?.vehicleModel || '',
+    colour: order?.colour || '',
+    vin: order?.vin || '',
+    unitsOrdered: order?.unitsOrdered || 1,
+    unitPriceEur: order?.unitPriceEur?.toString() || '',
+    unitDepositEur: order?.unitDepositEur?.toString() || '',
+    orderDate: order?.orderDate || new Date().toISOString().split('T')[0],
+    eta: order?.eta || '',
+    supplierId: order?.supplierId?.toString() || '',
+    clientId: order?.clientId?.toString() || '',
+    contractId: order?.contractId || '',
+    status: order?.status || 'draft',
+    paymentStatus: order?.paymentStatus || 'Pending',
+    depositStatus: order?.depositStatus || 'Pending',
+    contractStatus: order?.contractStatus || 'Pending',
+    notes: order?.notes || ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -73,24 +75,30 @@ export default function OrderForm({ onClose, onSuccess }: OrderFormProps) {
         clientId: formData.clientId ? parseInt(formData.clientId) : undefined,
         totalCostEur: calculatedTotals.totalCost,
         depositTotalEur: calculatedTotals.totalDeposit,
-        companyId: 1,
+        companyId: order?.companyId || 1,
         eta: formData.eta || undefined,
         vin: formData.vin || undefined,
         contractId: formData.contractId || undefined,
       };
 
-      const response = await fetch('http://localhost:8080/api/orders', {
-        method: 'POST',
+      const url = order?.id 
+        ? `http://localhost:8080/api/orders/${order.id}` 
+        : 'http://localhost:8080/api/orders';
+      
+      const method = order?.id ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload)
       });
 
-      if (!response.ok) throw new Error('Failed to create order');
+      if (!response.ok) throw new Error(`Failed to ${order?.id ? 'update' : 'create'} order`);
 
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create order');
+      setError(err instanceof Error ? err.message : 'Operation failed');
     } finally {
       setLoading(false);
     }
@@ -107,7 +115,9 @@ export default function OrderForm({ onClose, onSuccess }: OrderFormProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Create New Order</h2>
+          <h2 className="text-3xl font-bold text-gray-800">
+            {order?.id ? `Edit Order #${order.id}` : 'Create New Order'}
+          </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
         </div>
         
@@ -203,11 +213,11 @@ export default function OrderForm({ onClose, onSuccess }: OrderFormProps) {
                 <select className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}>
-                  <option>Draft</option>
-                  <option>Confirmed</option>
-                  <option>In Progress</option>
-                  <option>Completed</option>
-                  <option>Cancelled</option>
+                  <option value="draft">Draft</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
               <div>
@@ -317,7 +327,7 @@ export default function OrderForm({ onClose, onSuccess }: OrderFormProps) {
             <button type="submit"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition disabled:opacity-50"
               disabled={loading}>
-              {loading ? 'Creating Order...' : 'Create Order'}
+              {loading ? (order?.id ? 'Updating...' : 'Creating...') : (order?.id ? 'Update Order' : 'Create Order')}
             </button>
           </div>
         </form>
