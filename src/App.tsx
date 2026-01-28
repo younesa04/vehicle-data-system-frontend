@@ -15,6 +15,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ClientInvoicesPage } from './pages/ClientInvoicesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
+
+
 function App() {
   return (
     <AuthProvider>

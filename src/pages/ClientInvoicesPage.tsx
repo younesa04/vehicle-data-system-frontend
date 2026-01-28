@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { useClientInvoices, useCreateClientInvoice, useUpdateClientInvoice, useDeleteClientInvoice } from '../hooks/useClientInvoices';
 import { ClientInvoiceModal } from '../components/modals/ClientInvoiceModal';
-import type { ClientInvoice } from '../types';
+
+export interface ClientInvoice {
+  id?: number;
+  clientId: number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  totalAmount: number;
+  amountGross: number;  // Add this - you're using it in formatCurrency
+  currency: string;     // Add this - you're using it in formatCurrency
+  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'cancelled';
+}
+
 
 export const ClientInvoicesPage = () => {
   const [filters, setFilters] = useState({
@@ -28,7 +40,10 @@ export const ClientInvoicesPage = () => {
   const handleSave = async (data: Partial<ClientInvoice>) => {
     try {
       if (selectedInvoice) {
-        await updateMutation.mutateAsync({ id: selectedInvoice.id, data });
+        //await updateMutation.mutateAsync({ id: selectedInvoice.id, data });
+
+        await updateMutation.mutateAsync({ id: selectedInvoice.id!, data }); 
+
       } else {
         await createMutation.mutateAsync(data as any);
       }
