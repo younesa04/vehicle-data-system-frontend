@@ -1,4 +1,5 @@
 // src/App.tsx
+import { Toaster } from "sonner";
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -21,6 +22,7 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
+        <Toaster position="top-right" richColors />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 

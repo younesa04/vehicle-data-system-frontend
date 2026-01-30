@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Package, ArrowDownToLine, ArrowUpFromLine, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { X, Plus, Trash2, Package, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 import { shipmentsApi } from '../../api/shipments';
 import type { Shipment } from '../../api/shipments';
 import { ordersApi } from '../../api/orders';
@@ -122,7 +122,6 @@ export const CreateShipmentModal = ({
       setOrders(response.data);
     } catch (error) {
       console.error('Failed to load orders:', error);
-      toast.error('Failed to load orders');
     }
   };
 
@@ -141,7 +140,6 @@ export const CreateShipmentModal = ({
       }
     } catch (error) {
       console.error('Failed to load client invoices:', error);
-      toast.error('Failed to load client invoices (using demo data)');
       setClientInvoices([
         { id: 1, invoiceNumber: 'INV-2026-001', clientId: 1 },
         { id: 2, invoiceNumber: 'INV-2026-002', clientId: 2 },
@@ -152,7 +150,7 @@ export const CreateShipmentModal = ({
 
   const handleAddVehicle = () => {
     if (!currentItem.referenceId || !currentItem.vin) {
-      toast.error('Please select order/invoice and enter VIN');
+      alert('Please select order/invoice and enter VIN');
       return;
     }
 
@@ -165,12 +163,10 @@ export const CreateShipmentModal = ({
       vehicleModel: '',
       notes: ''
     });
-    toast.success('Vehicle added to shipment');
   };
 
   const handleRemoveVehicle = (index: number) => {
     setShipmentItems(shipmentItems.filter((_, i) => i !== index));
-    toast.info('Vehicle removed from shipment');
   };
 
   const handleReferenceChange = (refId: number) => {
@@ -196,7 +192,7 @@ export const CreateShipmentModal = ({
     e.preventDefault();
     
     if (shipmentItems.length === 0) {
-      toast.error('Please add at least one vehicle to the shipment');
+      alert('Please add at least one vehicle to the shipment');
       return;
     }
 
@@ -224,12 +220,11 @@ export const CreateShipmentModal = ({
         throw new Error(`Failed to save: ${response.status} - ${errorText}`);
       }
       
-      toast.success(editShipment ? 'Shipment updated successfully' : 'Shipment created successfully');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to save shipment:', error);
-      toast.error(`Failed to save shipment: ${error instanceof Error ? error.message : String(error)}`);
+      alert(`Failed to save shipment: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -425,6 +420,7 @@ export const CreateShipmentModal = ({
             )}
           </div>
 
+          {/* Rest of the form continues... */}
           {/* Basic Shipment Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -674,10 +670,7 @@ export const CreateShipmentModal = ({
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
+                <>Processing...</>
               ) : (
                 <>
                   {editShipment ? 'Update' : 'Create'} Shipment ({shipmentItems.length} vehicles)
